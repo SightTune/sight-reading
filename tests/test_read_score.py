@@ -118,6 +118,19 @@ class RealScores(unittest.TestCase):
             r = analyse(load(path))
         self.assertEqual((r["key"], r["time"]), ("G major", "2/4"))
 
+    def test_prints_on_a_windows_console(self):
+        import subprocess
+        xml = to_musicxml(compose(5, 1, key="Bb"))
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "piece.musicxml")
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(xml)
+            script = os.path.join(HERE, "..", "skills", "piano-lesson-plan", "scripts", "read_score.py")
+            run = subprocess.run([sys.executable, script, path], capture_output=True,
+                                 env={**os.environ, "PYTHONIOENCODING": "cp1252"})
+        self.assertEqual(run.returncode, 0, run.stderr.decode("utf-8", "replace"))
+        self.assertIn("B♭ major", run.stdout.decode("utf-8"))
+
     def test_not_a_score(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = os.path.join(tmp, "notes.xml")

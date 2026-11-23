@@ -398,6 +398,8 @@ def report(title, composer, part_name, others, n_staves, keys, times, tempo, bar
 
 
 def main(argv=None):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")    # keys like B♭ print on Windows consoles too
     args = (argv if argv is not None else sys.argv[1:])
     if len(args) != 1 or args[0] in ("-h", "--help"):
         print(__doc__)
