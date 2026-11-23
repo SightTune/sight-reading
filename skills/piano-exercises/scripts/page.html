@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<style>
+  :root {
+    --bg: #f6f3ee; --ink: #1d1b19; --muted: #6b655d; --line: #ddd5c8; --paper: #ffffff;
+    --accent: #3f4fa8; --accent-ink: #ffffff; --tip: #efeae1;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17171a; --ink: #ecebe8; --muted: #a29d95; --line: #34343a; --paper: #ffffff;
+      --accent: #8d9bf0; --accent-ink: #111218; --tip: #222227;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17171a; --ink: #ecebe8; --muted: #a29d95; --line: #34343a; --paper: #ffffff;
+    --accent: #8d9bf0; --accent-ink: #111218; --tip: #222227;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 920px; margin: 0 auto; padding: 32px 16px 48px; }
+  header h1 { font: 600 2rem/1.15 Georgia, "Iowan Old Style", "Times New Roman", serif; margin: 0 0 6px; }
+  .meta { color: var(--muted); margin: 0; }
+  .student { font: italic 1.1rem Georgia, serif; margin: 8px 0 0; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 18px 0 0; }
+  button, .xml { font: inherit; font-size: .9rem; border-radius: 999px; padding: 6px 14px; cursor: pointer;
+                 border: 1px solid var(--line); background: transparent; color: var(--ink); text-decoration: none; }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  button.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  label { font-size: .9rem; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
+  .tips { background: var(--tip); border-radius: 12px; padding: 14px 18px; margin: 24px 0 8px; }
+  .tips h2 { font: 600 1rem/1.3 system-ui, sans-serif; margin: 0 0 6px; }
+  .tips ol { margin: 0; padding-left: 1.2rem; }
+  .tips li { margin: 2px 0; }
+  .ex { margin: 28px 0 0; break-inside: avoid; page-break-inside: avoid; }
+  .ex-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .ex h2 { font: 600 1.4rem Georgia, serif; margin: 0; }
+  .tools { display: flex; gap: 8px; flex-wrap: wrap; }
+  .score { display: block; width: 100%; height: auto; background: var(--paper); border-radius: 10px;
+           border: 1px solid var(--line); padding: 8px 4px; margin-top: 8px; }
+  .teacher { margin-top: 48px; }
+  .teacher h2 { font: 600 1.3rem Georgia, serif; margin: 0 0 8px; }
+  .teacher p { color: var(--muted); margin: 4px 0 12px; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { color: var(--muted); font-weight: 600; }
+  footer { margin-top: 40px; color: var(--muted); font-size: .85rem; }
+  footer a { color: inherit; }
+  @media print {
+    :root { --bg: #fff; --ink: #000; --muted: #444; --line: #ccc; }
+    main { max-width: none; padding: 0; }
+    .actions, .tools { display: none; }
+    .score { border: none; padding: 0; }
+    .tips { background: none; border: 1px solid #ccc; }
+    body:not(.with-notes) .teacher { display: none; }
+    .teacher { break-before: page; page-break-before: always; }
+    @page { margin: 14mm 12mm; }
+  }
+</style>
+</head>
+<body class="with-notes">
+<main>
+  <header>
+    <h1>{{TITLE}}</h1>
+    <p class="meta">Level {{LEVEL}} · {{COUNT}} exercises · set {{CODE}}</p>
+    {{STUDENT}}
+    <div class="actions">
+      <button type="button" class="primary" onclick="window.print()">Print or save as PDF</button>
+      <label><input type="checkbox" id="notes" checked> Include the teacher's page</label>
+    </div>
+  </header>
+
+  <aside class="tips">
+    <h2>Before you play each one</h2>
+    <ol>
+      <li>Take 30 seconds to look: the key signature, the time signature, where each hand starts, and any rhythm you need to count.</li>
+      <li>Count one bar out loud (or press Count in) at a speed you can keep all the way through.</li>
+      <li>Keep going. Don't stop to fix a wrong note; the next beat matters more.</li>
+      <li>Then press Listen to hear it, and play it once more.</li>
+    </ol>
+  </aside>
+
+  {{CARDS}}
+
+  <section class="teacher">
+    <h2>Teacher's page</h2>
+    <p>Level {{LEVEL}}: {{SUMMARY}}</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>No.</th><th>Key</th><th>Time</th><th>Hands</th><th>Bars</th><th>♩ =</th><th>Melody range</th></tr></thead>
+        <tbody>{{ROWS}}</tbody>
+      </table>
+    </div>
+    <p>Every exercise is new, written by rule for this set. Set {{CODE}} always writes the same music, so you can make it again or share the code.</p>
+  </section>
+
+  <footer>Made with SightTune's free sight-reading plugin · <a href="https://sighttune.com">sighttune.com</a>. Save the set as a PDF and open it in SightTune on an iPad to turn the pages with your eyes.</footer>
+</main>
+<script>
+const MUSIC = {{MUSIC}};
+let ctx = null, playing = null, timer = null;
+
+document.getElementById('notes').addEventListener('change', e => document.body.classList.toggle('with-notes', e.target.checked));
+
+function audio() {
+  if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+  return ctx;
+}
+
+function stop() {
+  clearTimeout(timer);
+  if (playing) playing.forEach(n => { try { n.stop(); } catch (e) {} });
+  playing = null;
+  document.querySelectorAll('button.on').forEach(b => { b.classList.remove('on'); b.textContent = b.dataset.label; });
+}
+
+// A soft piano-like tone: a few harmonics with a quick attack and a falling tail.
+function tone(c, t, midi, len, out) {
+  const f = 440 * Math.pow(2, (midi - 69) / 12);
+  const level = midi < 60 ? 0.22 : 0.3;
+  const g = c.createGain();
+  g.connect(out);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(level, t + 0.01);
+  g.gain.exponentialRampToValueAtTime(level * 0.35, t + 0.4);
+  g.gain.setTargetAtTime(0.0001, t + len * 0.95, 0.08);
+  const nodes = [];
+  [[1, 1], [2, 0.4], [3, 0.15], [4, 0.07]].forEach(([h, a]) => {
+    const o = c.createOscillator();
+    const ga = c.createGain();
+    o.frequency.value = f * h;
+    ga.gain.value = a;
+    o.connect(ga); ga.connect(g);
+    o.start(t); o.stop(t + len + 0.6);
+    nodes.push(o);
+  });
+  return nodes;
+}
+
+function click(c, t, accent, out) {
+  const o = c.createOscillator(), g = c.createGain();
+  o.frequency.value = accent ? 1500 : 1000;
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.35, t + 0.003);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+  o.connect(g); g.connect(out);
+  o.start(t); o.stop(t + 0.09);
+  return [o];
+}
+
+function play(n, listen, button) {
+  const wasOn = button.classList.contains('on');
+  stop();
+  if (wasOn) return;
+  const m = MUSIC[n], c = audio();
+  c.resume();
+  const beat = 60 / m.tempo, t0 = c.currentTime + 0.12;
+  const out = c.createGain();
+  out.gain.value = 0.8;
+  out.connect(c.destination);
+  const nodes = [];
+  for (let i = 0; i < m.beats; i++) nodes.push(...click(c, t0 + i * beat, i === 0, out));
+  let end = t0 + m.beats * beat;
+  if (listen) {
+    const start = end;
+    m.notes.forEach(([s, d, midi]) => nodes.push(...tone(c, start + s * beat, midi, d * beat, out)));
+    end = start + Math.max(...m.notes.map(([s, d]) => s + d)) * beat + 0.8;
+  }
+  playing = nodes;
+  button.classList.add('on');
+  button.textContent = 'Stop';
+  timer = setTimeout(() => { if (playing === nodes) stop(); }, (end - c.currentTime) * 1000);
+}
+
+document.querySelectorAll('button.count, button.listen').forEach(b => {
+  b.dataset.label = b.textContent;
+  b.addEventListener('click', () => play(b.dataset.n, b.classList.contains('listen'), b));
+});
+</script>
+</body>
+</html>

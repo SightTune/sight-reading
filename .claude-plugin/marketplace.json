@@ -1,0 +1,12 @@
+{
+  "name": "sighttune",
+  "owner": { "name": "SightTune", "url": "https://sighttune.com" },
+  "metadata": { "description": "Free Claude plugins for music teachers and students, from SightTune." },
+  "plugins": [
+    {
+      "name": "sight-reading",
+      "source": "./",
+      "description": "New piano sight-reading exercises on demand, at six levels from first lessons to intermediate: engraved, printable, with playback."
+    }
+  ]
+}

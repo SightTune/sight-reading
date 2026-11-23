@@ -1,0 +1,9 @@
+{
+  "name": "sight-reading",
+  "version": "0.1.0",
+  "description": "New piano sight-reading exercises on demand, at six levels from first lessons to intermediate: engraved, printable, with playback. From SightTune.",
+  "author": { "name": "SightTune", "url": "https://sighttune.com" },
+  "homepage": "https://sighttune.com",
+  "license": "Apache-2.0",
+  "keywords": ["music", "piano", "sight-reading", "education", "teachers"]
+}
