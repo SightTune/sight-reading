@@ -131,6 +131,31 @@ class RealScores(unittest.TestCase):
         self.assertEqual(run.returncode, 0, run.stderr.decode("utf-8", "replace"))
         self.assertIn("B♭ major", run.stdout.decode("utf-8"))
 
+    def test_awkward_files(self):
+        piece = to_musicxml(compose(2, 4, key="F", beats=3))
+        with tempfile.TemporaryDirectory() as tmp:
+            # A container that names a file the archive doesn't have: find the score anyway.
+            path = os.path.join(tmp, "odd.mxl")
+            with zipfile.ZipFile(path, "w") as z:
+                z.writestr("META-INF/container.xml",
+                           "<container><rootfiles><rootfile full-path='missing.xml'/></rootfiles></container>")
+                z.writestr("piece.xml", piece)
+            self.assertEqual(analyse(load(path))["key"], "F major")
+        bar = ("<measure number='1'><attributes><divisions>1</divisions>{}</attributes><note><pitch><step>D</step>"
+               "<octave>4</octave></pitch><duration>1</duration><type>quarter</type></note></measure>")
+
+        def one_bar(attributes):
+            return read("<score-partwise><part-list><score-part id='P1'/></part-list><part id='P1'>"
+                        + bar.format(attributes) + "</part></score-partwise>")
+        free = one_bar("<key><fifths>0</fifths></key><time><senza-misura/></time>")
+        self.assertIsNone(free["time"])
+        self.assertEqual(free["level"]["estimate"], "about Level 1")
+        self.assertIn("no time signature", " ".join(free["sight_reading"]["notes"]))
+        self.assertEqual(one_bar("<key><fifths>9</fifths></key>")["key"], "C major")
+        dorian = one_bar("<key><fifths>0</fifths><mode>dorian</mode></key>")
+        self.assertEqual(dorian["mode"], "dorian")
+        self.assertIn("marked dorian", " ".join(dorian["sight_reading"]["notes"]))
+
     def test_not_a_score(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = os.path.join(tmp, "notes.xml")

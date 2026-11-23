@@ -81,8 +81,10 @@ def load(path: str) -> ET.Element:
                 container = ET.fromstring(z.read("META-INF/container.xml"))
                 rootfile = container.find(".//{*}rootfile")
                 name = rootfile.get("full-path") if rootfile is not None else None
-            except KeyError:
+            except (KeyError, ET.ParseError):
                 pass
+            if name not in z.namelist():
+                name = None
             if not name:
                 name = next((n for n in z.namelist() if n.lower().endswith((".xml", ".musicxml"))
                              and not n.startswith("META-INF")), None)
@@ -149,7 +151,7 @@ def analyse(root: ET.Element) -> dict:
             composer = (creator.text or "").strip()
 
     divisions, fifths, minor = 1, 0, False
-    keys, times, tempo = [], [], None
+    keys, times, tempo, modes = [], [], None, set()
     beats = beat_type = None
     sig = signature(0)
     raised = set()                       # (letter, alter) the minor key raises: its 6th and 7th
@@ -186,9 +188,12 @@ def analyse(root: ET.Element) -> dict:
                 if d and d.strip().isdigit():
                     divisions = int(d)
                 k = el.find("key")
-                if k is not None and (k.findtext("fifths") or "").strip().lstrip("-").isdigit():
+                if k is not None and (k.findtext("fifths") or "").strip().lstrip("-").isdigit()                         and abs(int(k.findtext("fifths"))) <= 7:
                     fifths = int(k.findtext("fifths"))
-                    minor = (k.findtext("mode") or "major").strip().lower() == "minor"
+                    mode = (k.findtext("mode") or "major").strip().lower()
+                    minor = mode == "minor"
+                    if mode not in ("major", "minor", "none", ""):
+                        modes.add(mode)
                     code = key_code(fifths, minor)
                     if not keys or keys[-1]["code"] != code:
                         keys.append({"bar": bar["n"], "code": code})
@@ -202,10 +207,10 @@ def analyse(root: ET.Element) -> dict:
                 t = el.find("time")
                 if t is not None:
                     b, bt = (t.findtext("beats") or "").strip(), (t.findtext("beat-type") or "").strip()
-                    label = f"{b}/{bt}" if b and bt else ("common time" if t.get("symbol") == "common" else "?")
+                    label = f"{b}/{bt}" if b and bt else None
                     beats = int(b) if b.isdigit() else None
                     beat_type = int(bt) if bt.isdigit() else None
-                    if not times or times[-1]["time"] != label:
+                    if label and (not times or times[-1]["time"] != label):
                         times.append({"bar": bar["n"], "time": label})
             elif el.tag in ("direction", "sound") and tempo is None:
                 sound = el if el.tag == "sound" else el.find("sound")
@@ -259,8 +264,15 @@ def analyse(root: ET.Element) -> dict:
     for sv in list(group):
         close(sv)
 
-    return report(title, composer, part_name, others, n_staves, keys, times, tempo, bars, stats,
-                  values, tuplets, chromatic, articulation, beats, beat_type)
+    result = report(title, composer, part_name, others, n_staves, keys, times, tempo, bars, stats,
+                    values, tuplets, chromatic, articulation, beats, beat_type)
+    if modes:
+        result["mode"] = ", ".join(sorted(modes))
+        result["sight_reading"]["notes"].append(
+            f"The score is marked {result['mode']}; the key shown is the major key of its key signature.")
+    if not times:
+        result["sight_reading"]["notes"].append("The score has no time signature; choose the set's time yourself.")
+    return result
 
 
 def report(title, composer, part_name, others, n_staves, keys, times, tempo, bars, stats, values, tuplets,
@@ -288,8 +300,8 @@ def report(title, composer, part_name, others, n_staves, keys, times, tempo, bar
         because(max(KEY_LEVEL.get(k["code"], BEYOND), 5), f"a change of key to {key_label(k['code'])}")
     if first_type == 4 and first_beats in METER_LEVEL:
         because(METER_LEVEL[first_beats], f"{first_beats}/4")
-    elif first_time in ("2/2", "common time"):
-        because(4 if first_time == "2/2" else 1, first_time)
+    elif first_time == "2/2":
+        because(4, "2/2")
     elif first_time:
         because(5, f"{first_time} time")
     if len(times) > 1:
