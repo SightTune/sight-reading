@@ -4,6 +4,8 @@ A free plugin for Claude that writes **new piano sight-reading exercises** whene
 
 Sight-reading practice needs music the player has never seen, and books run out or get memorised. Ask Claude for a set and you get fresh exercises at the level you choose: engraved, as a PDF ready to print, with a page where you can hear each one.
 
+It also plans lessons: tell Claude what a student is working on and what's going wrong, and you get a plan for the lesson and the week's practice, for any piece.
+
 ## Install
 
 In Claude Code:
@@ -41,6 +43,27 @@ These are SightTune's own levels, not an exam board's grades.
 
 Every exercise is written by rule: four-bar phrases that pause halfway and end on the key note, a melody that fits the hand, and from Level 3 a left hand that plays the chords. No two sets are alike.
 
+## Lesson plans
+
+Ask about any piece, for example:
+
+- "Plan a 45-minute lesson for a second-year student on Clementi's Sonatina Op. 36 No. 1. Her left-hand Alberti bass is uneven and she rushes the scales."
+- "Here's the MusicXML of my student's piece. What should we work on this week?"
+- "My student sent me this SightTune practice summary. Plan Thursday's lesson."
+
+You get:
+- where the student is;
+- one to three goals you can hear by the end of the lesson;
+- the lesson minute by minute, with a strategy for each hard spot;
+- a week of practice written for the student;
+- what to listen for next time.
+
+Claude can also make a sight-reading set to match the piece.
+
+With a **MusicXML** file (any notation app exports it), a script reads the key, time, each hand's range, leaps, chords and rhythms, finds the busiest bars, and matches a sight-reading level. A PDF of the score works too, but Claude can misread printed notes, so check anything that depends on them.
+
+## On an iPad
+
 On an iPad, open the PDF, tap Share, then [SightTune](https://apps.apple.com/app/id6756153566): it turns the pages as your eyes reach the end of each one. From an iPhone, the same steps send the set to SightTune on your iPad.
 
 ## Requirements
@@ -51,6 +74,7 @@ Python 3.9 or later and the [Verovio](https://www.verovio.org) package, which en
 
 - Claude runs the plugin's Python script on your computer. It writes the exercises by rule; no AI writes the notes.
 - The script makes a folder with the PDF, the page, the MusicXML files and a small `set.json`, wherever you ask. It changes nothing else. The PDF is written with Python's standard library.
+- For lesson plans, a second script reads a MusicXML file you give it and prints what it finds. It only reads the file.
 - The only download is the one-time install of Verovio from the Python Package Index.
 - **Nothing is sent anywhere.** The script and the page make no network requests: the music is engraved on your computer and the page plays it in your browser. A student's name, if you give one, is printed on that page and kept nowhere else.
 
@@ -62,5 +86,6 @@ Apache License 2.0. See [LICENSE](LICENSE). Copyright 2026 SightTune.
 
 ```
 python skills/piano-exercises/scripts/make_set.py --level 3 --count 10
+python skills/piano-lesson-plan/scripts/read_score.py score.musicxml
 python -m unittest discover -s tests
 ```
