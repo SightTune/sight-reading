@@ -49,12 +49,13 @@
   table { border-collapse: collapse; width: 100%; font-size: .9rem; }
   th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
   th { color: var(--muted); font-weight: 600; }
+  .note { color: var(--muted); font-size: .9rem; margin: 10px 0 0; max-width: 60ch; }
   footer { margin-top: 40px; color: var(--muted); font-size: .85rem; }
   footer a { color: inherit; }
   @media print {
     :root { --bg: #fff; --ink: #000; --muted: #444; --line: #ccc; }
     main { max-width: none; padding: 0; }
-    .actions, .tools { display: none; }
+    .actions, .tools, .note { display: none; }
     .score { border: none; padding: 0; }
     .tips { background: none; border: 1px solid #ccc; }
     body:not(.with-notes) .teacher { display: none; }
@@ -70,9 +71,10 @@
     <p class="meta">Level {{LEVEL}} · {{COUNT}} exercises · set {{CODE}}</p>
     {{STUDENT}}
     <div class="actions">
-      <button type="button" class="primary" onclick="window.print()">Print or save as PDF</button>
+      <button type="button" class="primary" id="print">Print or save as PDF</button>
       <label><input type="checkbox" id="notes" checked> Include the teacher's page</label>
     </div>
+    <p class="note" id="viewer-note" hidden>If nothing happens, this viewer doesn't allow printing or downloads. Print the PDF that came with this set, or download this page and open it in your web browser.</p>
   </header>
 
   <aside class="tips">
@@ -99,13 +101,20 @@
     <p>Every exercise is new, written by rule for this set. Set {{CODE}} always writes the same music, so you can make it again or share the code.</p>
   </section>
 
-  <footer>Made with SightTune's free sight-reading plugin · <a href="https://sighttune.com">sighttune.com</a>. Save the set as a PDF and open it in SightTune on an iPad to turn the pages with your eyes.</footer>
+  <footer>Made with SightTune's free sight-reading plugin · <a href="https://sighttune.com">sighttune.com</a>. Open the PDF in SightTune on an iPad to turn the pages with your eyes.</footer>
 </main>
 <script>
 const MUSIC = {{MUSIC}};
 let ctx = null, playing = null, timer = null;
 
 document.getElementById('notes').addEventListener('change', e => document.body.classList.toggle('with-notes', e.target.checked));
+
+// Inside a chat or preview frame, printing and downloads are often blocked: say what to do instead.
+let framed = true;
+try { framed = window.self !== window.top; } catch (e) {}
+function viewerNote() { if (framed) document.getElementById('viewer-note').hidden = false; }
+document.getElementById('print').addEventListener('click', () => { viewerNote(); window.print(); });
+document.querySelectorAll('a.xml').forEach(a => a.addEventListener('click', viewerNote));
 
 function audio() {
   if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();

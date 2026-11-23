@@ -2,7 +2,7 @@
 
 A free plugin for Claude that writes **new piano sight-reading exercises** whenever you need them, for piano teachers, students and faculty.
 
-Sight-reading practice needs music the player has never seen, and books run out or get memorised. Ask Claude for a set and you get fresh exercises at the level you choose: engraved, ready to print or save as a PDF, with a button to hear each one.
+Sight-reading practice needs music the player has never seen, and books run out or get memorised. Ask Claude for a set and you get fresh exercises at the level you choose: engraved, as a PDF ready to print, with a page where you can hear each one.
 
 ## Install
 
@@ -34,7 +34,8 @@ These are SightTune's own levels, not an exam board's grades.
 
 ## What you get
 
-- **A page** with every exercise engraved, a **Count in** and a **Listen** button for each, and **Print or save as PDF**. A teacher's page lists each exercise's key, time, hands and range; untick it for a student's copy.
+- **A PDF** to print, in letter or A4: the exercises, then a teacher's page listing each one's key, time, hands, tempo and range. Leave the last page out for a student's copy.
+- **A page** with every exercise engraved and a **Count in** and a **Listen** button for each. It works in Claude's apps too, where the PDF is the copy to print.
 - **MusicXML** files for MuseScore, Dorico, Finale or Sibelius.
 - **A set code** (like `L3-48213`) that makes the same set again.
 
@@ -49,7 +50,7 @@ Python 3.9 or later and the [Verovio](https://www.verovio.org) package, which en
 ## What it runs and what it sends
 
 - Claude runs the plugin's Python script on your computer. It writes the exercises by rule; no AI writes the notes.
-- The script makes a folder with the page, the MusicXML files and a small `set.json`, wherever you ask. It changes nothing else.
+- The script makes a folder with the PDF, the page, the MusicXML files and a small `set.json`, wherever you ask. It changes nothing else. The PDF is written with Python's standard library.
 - The only download is the one-time install of Verovio from the Python Package Index.
 - **Nothing is sent anywhere.** The script and the page make no network requests: the music is engraved on your computer and the page plays it in your browser. A student's name, if you give one, is printed on that page and kept nowhere else.
 

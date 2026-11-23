@@ -2,10 +2,11 @@
 
     python make_set.py --level 3 [--count 10] [--keys C,G,Am] [--time 4/4,3/4]
                        [--hands mixed|right|left|both] [--bars 8] [--seed 4821]
-                       [--title "..."] [--student "..."] [--out DIR]
+                       [--title "..."] [--student "..."] [--paper letter|a4] [--out DIR]
 
 Writes into DIR (default ./sight-reading-<set code>):
     sight-reading-<set code>.html   the set: engraved music, Listen and Count-in buttons, printable
+    sight-reading-<set code>.pdf    the set to print: the exercises, then the teacher's page last
     musicxml/NN.musicxml            each exercise, for notation software
     set.json                        what was made, and the set code that makes it again
 
@@ -23,6 +24,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from sightread import KEYS, LEVELS, compose, to_musicxml  # noqa: E402
+from pdf import make_pdf  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -71,6 +73,7 @@ def main(argv=None):
     ap.add_argument("--seed", type=int)
     ap.add_argument("--title")
     ap.add_argument("--student", help="a name to print on the set, if the teacher wants one")
+    ap.add_argument("--paper", choices=["letter", "a4"], default="letter", help="the PDF's paper size")
     ap.add_argument("--out")
     args = ap.parse_args(argv)
     try:
@@ -114,12 +117,15 @@ def main(argv=None):
     path = os.path.join(out, f"sight-reading-{code}.html")
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         f.write(page)
+    pdf_path = os.path.join(out, f"sight-reading-{code}.pdf")
+    with open(pdf_path, "wb") as f:
+        f.write(make_pdf(title, args.student, code, lv.n, lv.summary, exercises, args.paper))
     with open(os.path.join(out, "set.json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump({"code": code, "level": args.level, "title": title, "hands": hands,
                    "exercises": [{k: v for k, v in e.items() if k not in ("svg", "xml", "events")} for e in exercises]},
                   f, indent=1, ensure_ascii=False)
         f.write("\n")
-    print(json.dumps({"page": path, "folder": out, "code": code, "count": len(exercises),
+    print(json.dumps({"page": path, "pdf": pdf_path, "folder": out, "code": code, "count": len(exercises),
                       "exercises": [{k: e[k] for k in ("n", "key", "time", "hands", "bars", "tempo")} for e in exercises]},
                      ensure_ascii=False, indent=1))
 
