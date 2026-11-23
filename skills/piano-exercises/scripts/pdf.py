@@ -359,10 +359,12 @@ class Pages:
         self.w, self.h = PAPER[paper]
         self.footer = footer
         self.pages: list[list[str]] = []
+        self.links: list[list[tuple]] = []
         self.new()
 
     def new(self):
         self.pages.append([])
+        self.links.append([])
         self.y = self.h - MARGIN
 
     @property
@@ -401,17 +403,25 @@ class Pages:
             self.text(ln, size, font, MARGIN + indent)
             self.y -= size * (lead - 1)
 
+    def link(self, label: str, url: str, size: float, lead=1.35):
+        """A line of text that opens `url` when clicked in a PDF viewer."""
+        self.room(size * lead)
+        self.y -= size
+        self.ops.append(f"q 0.1 0.25 0.6 rg BT /F1 {num(size)} Tf {num(MARGIN)} {num(self.y)} Td {pdf_text(label)} Tj ET Q")
+        self.links[-1].append((MARGIN, self.y - size * 0.25, MARGIN + text_width(label, size), self.y + size * 0.8, url))
+        self.y -= size * (lead - 1)
+
     def rule(self, gap=4.0, width=0.5, gray=0.75):
         self.ops.append(f"q {num(gray)} G {num(width)} w {num(MARGIN)} {num(self.y - gap)} m {num(self.w - MARGIN)} {num(self.y - gap)} l S Q")
         self.y -= gap * 2
 
-    def finish(self) -> list[bytes]:
+    def finish(self) -> list[tuple[bytes, list[tuple]]]:
         n = len(self.pages)
         out = []
-        for i, ops in enumerate(self.pages, 1):
+        for i, (ops, links) in enumerate(zip(self.pages, self.links), 1):
             foot = f"{self.footer} \xb7 page {i} of {n}"
             ops = ops + [f"q 0.35 g BT /F1 8 Tf {num(MARGIN)} {num(MARGIN - 22)} Td {pdf_text(foot)} Tj ET Q"]
-            out.append("\n".join(ops).encode("latin-1"))
+            out.append(("\n".join(ops).encode("latin-1"), links))
         return out
 
 
@@ -470,10 +480,19 @@ def make_pdf(title: str, student: str | None, code: str, level: int, summary: st
     p.y -= 8
     p.paragraph(f"Every exercise is new, written by rule for this set. Set {code} always writes the same music, "
                 "so you can make it again or share the code.", 9.5)
+    p.y -= 14
+    p.line("Reading on an iPad", 10.5, "bold")
+    p.paragraph(IPAD_STEPS, 9.5)
+    p.link(f"Get SightTune on the App Store: {APP_STORE[len('https://'):]}", APP_STORE, 9.5)
     return _write(p.finish(), p.w, p.h, title)
 
 
-def _write(contents: list[bytes], w: float, h: float, title: str) -> bytes:
+APP_STORE = "https://apps.apple.com/app/id6756153566"
+IPAD_STEPS = ("Open this PDF on an iPad, tap Share, then SightTune: it turns the pages as your eyes reach the end "
+              "of each one. From an iPhone, the same steps send the set to SightTune on your iPad.")
+
+
+def _write(contents: list[tuple[bytes, list[tuple]]], w: float, h: float, title: str) -> bytes:
     n = len(contents)
     objs: list[bytes] = [
         b"<< /Type /Catalog /Pages 2 0 R >>",
@@ -482,9 +501,14 @@ def _write(contents: list[bytes], w: float, h: float, title: str) -> bytes:
     for ref in ("F1", "F2", "F3"):
         objs.append(f"<< /Type /Font /Subtype /Type1 /BaseFont /{BASE_FONT[ref]} /Encoding /WinAnsiEncoding >>".encode())
     objs.append(f"<< /Title {pdf_text(title)} /Producer (SightTune sight-reading) >>".encode("latin-1"))
-    for i, data in enumerate(contents):
+    for i, (data, links) in enumerate(contents):
+        annots = ""
+        if links:
+            annots = " /Annots [" + " ".join(
+                f"<< /Type /Annot /Subtype /Link /Rect [{num(x1)} {num(y1)} {num(x2)} {num(y2)}] /Border [0 0 0] "
+                f"/A << /S /URI /URI {pdf_text(url)} >> >>" for x1, y1, x2, y2, url in links) + "]"
         objs.append((f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {num(w)} {num(h)}] "
-                     f"/Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents {8 + 2 * i} 0 R >>").encode())
+                     f"/Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >>{annots} /Contents {8 + 2 * i} 0 R >>").encode())
         z = zlib.compress(data, 9)
         objs.append(f"<< /Length {len(z)} /Filter /FlateDecode >>\nstream\n".encode() + z + b"\nendstream")
     out = bytearray(b"%PDF-1.4\n%\xe2\xe3\xcf\xd3\n")

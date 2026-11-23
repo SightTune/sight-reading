@@ -108,6 +108,7 @@ class PDF(unittest.TestCase):
         self.assertTrue(data.startswith(b"%PDF-1.4\n"))
         self.assertTrue(data.endswith(b"%%EOF\n"))
         self.assertGreater(_pdf_objects(data), 8)
+        self.assertIn(b"/URI (https://apps.apple.com/app/id6756153566)", data)
         self.assertEqual(data, make_pdf("Test (set)", "Sam", "L5-1", 5, "summary",
                                         [self.exercise(SAMPLE_SVG, i) for i in range(1, 9)]))
         ops = path_ops("M0 0 l10 0 h5 v5 c1 1 2 2 3 3 s4 4 5 5 q1 1 2 2 t3 3 z")

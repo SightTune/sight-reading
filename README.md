@@ -41,7 +41,7 @@ These are SightTune's own levels, not an exam board's grades.
 
 Every exercise is written by rule: four-bar phrases that pause halfway and end on the key note, a melody that fits the hand, and from Level 3 a left hand that plays the chords. No two sets are alike.
 
-On an iPad, open the PDF in [SightTune](https://sighttune.com) and it turns the pages as your eyes reach the end.
+On an iPad, open the PDF, tap Share, then [SightTune](https://apps.apple.com/app/id6756153566): it turns the pages as your eyes reach the end of each one. From an iPhone, the same steps send the set to SightTune on your iPad.
 
 ## Requirements
 
