@@ -8,11 +8,18 @@ It also plans lessons: tell Claude what a student is working on and what's going
 
 ## Install
 
-In Claude Code:
+**In Claude Code:**
 
 ```
 /plugin install sight-reading --marketplace SightTune/sight-reading
 ```
+
+**In Claude's apps** (claude.ai, desktop and mobile):
+
+1. Download `piano-exercises.zip` and `piano-lesson-plan.zip` from the [latest release](https://github.com/SightTune/sight-reading/releases/latest).
+2. In Claude, open **Customize**, then **Skills**, then **Add**, then **Upload skill**. Do this once for each zip.
+
+The skills run code, so Claude's code execution needs to be turned on in its settings.
 
 ## What you can ask
 
