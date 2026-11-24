@@ -18,6 +18,7 @@ import argparse
 import base64
 import html
 import json
+import math
 import os
 import random
 import sys
@@ -35,10 +36,13 @@ def plan(level: int, count: int, keys, meters, hands: str, rng: random.Random):
     keys = keys or list(lv.keys)
     meters = meters or list(lv.meters)
     keys, meters = rng.sample(keys, len(keys)), rng.sample(meters, len(meters))
+    # Time signatures take turns, so every one asked for comes up and is spread evenly. After each
+    # full round of keys and times they shift by one, so a key isn't always paired with the same time.
+    cycle = math.lcm(len(keys), len(meters))
     out = []
     for i in range(count):
         k = keys[i % len(keys)]                          # every key before any repeats
-        m = meters[(i + i // len(keys)) % len(meters)]   # and the time signatures turn over with them
+        m = meters[(i + i // cycle) % len(meters)]
         if hands == "mixed":
             hand = "left" if i % 3 == 2 else "right"
         else:

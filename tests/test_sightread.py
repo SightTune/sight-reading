@@ -97,6 +97,38 @@ def _pdf_objects(data: bytes):
     return count
 
 
+class SetPlan(unittest.TestCase):
+    """Which key, time and hand each exercise in a set gets."""
+
+    def test_every_key_and_time_asked_for_comes_up_evenly(self):
+        import random
+        from collections import Counter
+        from make_set import plan
+        for level, lv in LEVELS.items():
+            for keys in ([lv.keys[0]], list(lv.keys[:2]), list(lv.keys)):
+                for meters in ([lv.meters[0]], list(lv.meters[:2]), list(lv.meters)):
+                    for count in (1, 3, 4, 6, 8, 10, 12, 40):
+                        for seed in range(5):
+                            got = plan(level, count, keys, meters, "both", random.Random(seed))
+                            label = f"level {level} keys {keys} times {meters} count {count} seed {seed}"
+                            self.assertEqual(len(got), count, label)
+                            if count >= len(keys):
+                                self.assertEqual({k for k, _, _ in got[:len(keys)]}, set(keys), label)
+                            if count >= len(meters):
+                                self.assertEqual({m for _, m, _ in got[:len(meters)]}, set(meters), label)
+                            times = Counter(m for _, m, _ in got).values()
+                            self.assertLessEqual(max(times) - min(times), 1, label)
+                            if count >= 2 * len(keys) * len(meters):    # each key meets each time
+                                self.assertEqual(len({(k, m) for k, m, _ in got}), len(keys) * len(meters), label)
+
+    def test_one_key_still_gets_both_times(self):
+        import random
+        from make_set import plan
+        got = plan(2, 6, ["G"], None, "mixed", random.Random(49485))
+        self.assertEqual({m for _, m, _ in got}, set(LEVELS[2].meters))
+        self.assertEqual([h for _, _, h in got], ["right", "right", "left"] * 2)
+
+
 class PDF(unittest.TestCase):
     def exercise(self, svg, n=1):
         return {"n": n, "svg": svg, "key": "B♭ major", "time": "3/4", "hands": "hands together", "bars": 8,
